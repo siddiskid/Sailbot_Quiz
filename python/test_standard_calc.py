@@ -47,6 +47,14 @@ def test_bound_large_angles():
     assert bound_to_180(-720) == 0    # -720 % 360 = 0
 
 
+def test_bound_edge_cases():
+    """Test edge cases for bound_to_180"""
+    assert bound_to_180(180) == -180    # Exactly 180 becomes -180
+    assert bound_to_180(-180) == -180   # -180 stays -180
+    assert bound_to_180(179.99) == 179.99  # Just under 180
+    assert bound_to_180(-179.99) == -179.99  # Just over -180
+
+
 """ Tests for is_angle_between() """
 
 
@@ -99,3 +107,48 @@ def test_between_normalized_input():
     """Test that function works with angles outside [-180, 180)"""
     assert is_angle_between(360, 405, 450) is True  # Same as (0, 45, 90)
     assert is_angle_between(-360, -315, -270) is True  # Same as (0, 45, 90)
+
+
+def test_between_zero_degree_spans():
+    """Test cases where the angular span is zero"""
+    assert is_angle_between(90, 90, 90) is True    # All angles identical
+    assert is_angle_between(0, 0, 0) is True       # All zero
+    assert is_angle_between(-90, -90, -90) is True  # All negative identical
+
+
+def test_between_exact_180_spans():
+    """Test cases with exactly 180 degree spans"""
+    assert is_angle_between(0, 180, 180) is True   # Middle at end of 180° span
+    assert is_angle_between(0, -180, 180) is True  # Middle at start of 180° span
+    assert is_angle_between(90, -90, 270) is True  # 180° span, middle at opposite
+    assert is_angle_between(45, -135, 225) is True  # 180° span different orientation
+
+
+def test_between_very_close_angles():
+    """Test cases with very small angular differences"""
+    assert is_angle_between(0, 0.1, 0.2) is True    # Tiny clockwise arc
+    assert is_angle_between(0, -0.1, -0.2) is True  # Tiny counter-clockwise arc
+    assert is_angle_between(179, 179.5, -179) is True  # Small arc crossing boundary
+
+
+def test_between_almost_reflex():
+    """Test cases just at the reflex angle boundary"""
+    assert is_angle_between(0, 90, 179) is True     # Just under 180°, should be normal
+    assert is_angle_between(0, 90, 181) is False    # Just over 180°, should be reflex
+    assert is_angle_between(0, -90, -179) is True   # Just under 180° counter-clockwise
+    assert is_angle_between(0, -90, -181) is False  # Just over 180° counter-clockwise
+
+
+def test_between_multiple_rotations():
+    """Test with angles requiring multiple full rotations"""
+    assert is_angle_between(720, 765, 810) is True  # Same as (0, 45, 90)
+    assert is_angle_between(-720, -675, -630) is True  # Multiple negative rotations
+    assert is_angle_between(1080, 45, 1170) is True  # Mixed large and normal angles
+
+
+def test_bound_fractional_angles():
+    """Test bound_to_180 with fractional angles"""
+    assert bound_to_180(359.5) == -0.5
+    assert bound_to_180(180.5) == -179.5
+    assert bound_to_180(-180.5) == 179.5
+    assert bound_to_180(0.5) == 0.5
